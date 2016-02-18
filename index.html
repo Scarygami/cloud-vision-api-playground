@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
+    <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+    <link rel="import" href="elements/elements.html">
+    <style is="custom-style">
+      body {
+        @apply(--layout-fullbleed);
+        @apply(--paper-font-body1);
+      }
+
+      paper-toolbar {
+        --paper-toolbar-title: {
+          line-height: 1.1;
+        };
+      }
+
+      #panel:not([narrow]) #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-fit);
+      }
+
+      #panel[narrow] #content {
+        @apply(--layout-vertical);
+      }
+
+
+      #content > *, .column > * {
+        margin: 5px;
+      }
+
+      .column {
+        @apply(--layout-vertical);
+        @apply(--layout-start-justified);
+        max-width: 50%;
+      }
+
+      #panel[narrow] .column {
+        max-width: 100%;
+      }
+
+      #videobox {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      #video {
+        width: 100%;
+        height: 100%;
+      }
+
+      #settings {
+        @apply(--layout-vertical);
+      }
+
+      #settings > * {
+        margin: 5px;
+      }
+
+      paper-button {
+        width: 100%;
+      }
+
+      #upload {
+        position: absolute;
+        opacity: 0;
+      }
+
+      #chosenPhoto {
+        max-width: 100%;
+      }
+
+    </style>
+  </head>
+  <body unresolved>
+    <input type="file" id="upload" accept="image/*">
+    <template is="dom-bind" id="app">
+      <discovery-api-elements
+        name="vision"
+        version="v1"
+        doc-url="https://vision.googleapis.com/$discovery/rest?version=v1"
+        no-client></discovery-api-elements>
+
+      <vision-images-annotate
+        id="request"
+        on-success="apiResponse"
+        on-error="apiError"
+        key="[[apiKey]]"
+      ></vision-images-annotate>
+
+      <paper-drawer-panel id="panel" responsive-width="800px">
+        <paper-header-panel drawer>
+          <paper-toolbar>
+            <div class="title">Settings</div>
+          </paper-toolbar>
+          <div id="settings">
+            <template is="dom-repeat" items="{{features}}">
+              <paper-toggle-button checked="{{item.active}}">[[item.name]]</paper-toggle-button>
+            </template>
+            <div></div>
+            <div>
+              <span>Results per feature</span>
+              <paper-slider min="1" max="10" value="{{maxResults}}" editable></paper-slider>
+            </div>
+          </div>
+        </paper-header-panel>
+        <paper-header-panel main>
+          <paper-toolbar>
+            <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+            <div class="title">Cloud Vision API Playground</div>
+          </paper-toolbar>
+          <div id="content">
+            <div class="column">
+              <div>
+                <paper-button raised on-click="choosePhoto">Choose and analyse photo</paper-button>
+              </div>
+              <div id="videobox">
+                <video id="video"
+                       is="user-media"
+                       streaming="{{streaming}}"
+                       capture-mode flip
+                       on-user-media-error="videoError"
+                       on-capture-error="captureError"></video>
+                <span id="videoError" hidden$="[[streaming]]">Trying to access webcam...</span>
+              </div>
+              <div><paper-button raised on-click="takePhoto" hidden$="[[!streaming]]">Take and analyse photo</paper-button></div>
+            </div>
+            <div class="column">
+              <div><img id="chosenPhoto"></div>
+              <pre id="results"></pre>
+            </div>
+          </div>
+        </paper-header-panel>
+      </paper-drawer-panel>
+    </template>
+    <script src="app.js"></script>
+  </body>
+</html>
